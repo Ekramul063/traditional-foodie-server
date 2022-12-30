@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 require('dotenv').config();
 var jwt = require('jsonwebtoken');
@@ -72,23 +72,50 @@ async function run() {
             const result = await productsCollection.find(query).toArray();
             res.send(result);
         })
+        //get single product by id
+        app.get('/products-single/:id',async(req,res)=>{
+            const id = req.params.id;
+            const query = {_id:ObjectId(id)};
+            const result = await productsCollection.findOne(query);
+            res.send(result);
+        })
         //insert product
         app.post('/products',async(req,res)=>{
             const product = req.body;
             const result = await productsCollection.insertOne(product);
             res.send(result);
         })
+        //product location
         app.get('/product-locations',async(req,res)=>{
             const query = {};
             const result = await productLocationsCollection.find(query).toArray();
             res.send(result)
         })
+        // product location district name
         app.get('/product-locations/:division',async(req,res)=>{
             const divisonName = req.params.division;
             const query = {divison:divisonName};
             const result = await productLocationsCollection.findOne(query);
             res.send(result);
         })
+
+        //find products by district name
+        app.get('/products/:district',async(req,res)=>{
+            const district = req.params.district;
+            const query = {district:district};
+            const result = await productsCollection.find(query).toArray();
+            res.send(result);
+
+        })
+        //find single seller products
+        app.get('/products/added-product/:seller',async(req,res)=>{
+            const seller = req.params.seller;
+            console.log(seller);
+            const query = {seller:seller};
+            const result = await productsCollection.find(query).toArray();
+            res.send(result)
+        })
+
 
     }
     finally {
