@@ -157,9 +157,13 @@ async function run() {
 
         //get all product 
         app.get('/products',async(req,res)=>{
+            const page = req.query.page;
+            const size = parseInt(req.query.size);
+            console.log(page,size)
             const query = {};
-            const result = await productsCollection.find(query).toArray();
-            res.send(result);
+            const products = await productsCollection.find(query).skip(page*size).limit(size).toArray();
+            const count= await productsCollection.estimatedDocumentCount();
+            res.send({products,count});
         })
         //get single product by id
         app.get('/products-single/:id',async(req,res)=>{
