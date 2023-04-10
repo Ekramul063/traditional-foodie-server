@@ -42,6 +42,8 @@ async function run() {
         const productLocationsCollection= client.db('traditional-food').collection('product-locations');
         const upazilasCollection= client.db('traditional-food').collection('upazilas');
         const userAddressCollection= client.db('traditional-food').collection('userAddress');
+        const blogsCollection= client.db('traditional-food').collection('blogs');
+        const reviewsCollection= client.db('traditional-food').collection('reviews');
         //test
         app.get('/', (req, res) => {
             res.send('Traditional food web server running')
@@ -200,6 +202,8 @@ async function run() {
             const result = await productsCollection.insertOne(product);
             res.send(result);
         })
+
+
         //product location
         app.get('/product-locations',async(req,res)=>{
             const query = {};
@@ -294,7 +298,87 @@ async function run() {
             const result = await districtsCollection.findOne(query);
             res.send(result)
         })
+        //get feature product
+       app.get('/feature-products',async(req,res)=>{
+        const query = {feature:true};
+        const result=await productsCollection.find(query).toArray();
+        res.send(result);
+       })
+        //add feature product 
+        app.put('/feature-products/:id',async(req,res)=>{
+            const id = req.params.id;
+            const filter = {_id:ObjectId(id)};
+            const product = await productsCollection.findOne(filter);
+            if(product.feature===true){
+                res.send('option already available')
+            }
+            
+            const options = {upsert:true};
+            const doc = {
+                $set:{
+                    feature:true
+                }
+            }
+            console.log(filter);
+            const result = await productsCollection.updateOne(filter,doc,options)
+            res.send(result);
+        })
+        //remove feature product 
+        app.patch('/feature-products-remove/:id',async(req,res)=>{
+            const id = req.params.id;
+            const filter = {_id:ObjectId(id)};
+            const product = await productsCollection.findOne(filter);
+            if(product.feature===false){
+                res.send('option already available')
+            }
+            const doc = {
+                $set:{
+                    feature:false
+                }
+            }
+            const result = await productsCollection.updateOne(filter,doc)
+            res.send(result);
+        })
+        //get all blogs
+        app.get('/blogs',async(req,res)=>{
+            const query  = {};
+            const result  = await blogsCollection.find(query).toArray();
+            res.send(result);
+        })
+        //get single blog
+        app.get('/blogs/:id',async(req,res)=>{
+            const id =req.params.id;
+            const query = {_id:ObjectId(id)};
+            const result = await blogsCollection.findOne(query);
+            res.send(result);
+        })
+        //add blog
+        app.post('/blogs',async(req,res)=>{
+            const blog = req.body;
+            const result = await blogsCollection.insertOne(blog);
+            res.send(result);
+        })
+        //blogs homepage
+        app.get('/blogs-home',async(req,res)=>{
+            const query  = {};
+            const result  = await blogsCollection.find(query).limit(3).toArray();
+            res.send(result);
+        }) 
        
+        //get review 
+        app.get('/reviews',async(req,res)=>{
+            const query = {};
+            const result  = await reviewsCollection.find(query).toArray();
+            res.send(result);
+        })
+        //add review
+        app.post ('/reviews',async(req,res)=>{
+            const review = req.body;
+            const result = await reviewsCollection.insertOne(review);
+            res.send(result);
+        })
+
+
 
 
     }
